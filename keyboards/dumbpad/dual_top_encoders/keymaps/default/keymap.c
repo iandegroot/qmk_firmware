@@ -19,14 +19,11 @@
 #define _SUB  1
 #define _DBG  2
 
-bool is_alt_tab_active = false;
-uint16_t alt_tab_timer = 0;
-
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /*
         BASE LAYER
     /-----------------------------------------------------`
-    |             |  Mute   | MO(DBG) |  Play   | TO(SUB) |
+    |             | TO(SUB) | MO(DBG) |  Play   |  Mute   |
     |             |---------|---------|---------|---------|
     |             |   F9    |   F10   |   F11   |   F12   |
     |             |---------|---------|---------|---------|
@@ -36,7 +33,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     \-----------------------------------------------------'
     */
     [_BASE] = LAYOUT(
-                    KC_MUTE,   MO(_DBG), KC_MPLY,  TO(_SUB),
+                    TO(_SUB),   MO(_DBG), KC_MPLY,  KC_MUTE,
                     KC_F9,     KC_F10,   KC_F11,   KC_F12,
                     KC_F5,     KC_F6,    KC_F7,    KC_F8,
         _______,    KC_F1,     KC_F2,    KC_F3,    KC_F4
@@ -44,7 +41,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     /*
         SUB LAYER
     /-----------------------------------------------------`
-    |             |    .    |    /    |    *    | TO(BASE)|
+    |             | TO(BASE)|    /    |    *    |    .    |
     |             |---------|---------|---------|---------|
     |             |    9    |    0    |    -    |    +    |
     |             |---------|---------|---------|---------|
@@ -54,10 +51,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     \-----------------------------------------------------'
     */
     [_SUB] = LAYOUT(
-                    KC_PDOT,  KC_PSLS,  KC_PAST,  TO(_BASE),
-                    KC_9,     KC_0,     KC_PMNS,  KC_PPLS,
-                    KC_5,     KC_6,     KC_7,     KC_8,
-        KC_ENTER,   KC_1,     KC_2,     KC_3,     KC_4
+                    TO(_BASE),  KC_PSLS,  KC_PAST,  KC_PDOT,
+                    KC_9,       KC_0,     KC_PMNS,  KC_PPLS,
+                    KC_5,       KC_6,     KC_7,     KC_8,
+        KC_ENTER,   KC_1,       KC_2,     KC_3,     KC_4
     ),
     /*
         DEBUG LAYER
@@ -101,24 +98,18 @@ void encoder_update_user(uint8_t index, bool clockwise) {
     /*  Custom encoder control - handles CW/CCW turning of encoder
      *  Default behavior:
      *    left encoder:
-     *      CW:  Alt + Tab
-     *      CCW: Shift + Alt + Tab
+     *      CW:  Next track
+     *      CCW: Previous track
      *    right encoder:
      *      CW:  volume up
      *      CCW: volume down     
      */
     if (index == 0) {
-        // Alt tab through open applications
+        // Switch between tracks
         if (clockwise) {
-            if (!is_alt_tab_active) {
-                is_alt_tab_active = true;
-                register_code(KC_LALT);
-            }
-            alt_tab_timer = timer_read();
-            tap_code16(KC_TAB);
+            tap_code(KC_MNXT);
         } else {
-            alt_tab_timer = timer_read();
-            tap_code16(S(KC_TAB));
+            tap_code(KC_MPRV);
         }
     } else if (index == 1) {
         // Volume up (CW) and down (CCW)
@@ -126,15 +117,6 @@ void encoder_update_user(uint8_t index, bool clockwise) {
             tap_code(KC_VOLU);
         } else {
             tap_code(KC_VOLD);
-        }
-    }
-}
-
-void matrix_scan_user(void) {
-    if (is_alt_tab_active) {
-        if (timer_elapsed(alt_tab_timer) > 700) {
-            unregister_code(KC_LALT);
-            is_alt_tab_active = false;
         }
     }
 }
