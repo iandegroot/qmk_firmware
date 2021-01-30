@@ -17,3 +17,5 @@ See the [build environment setup](https://docs.qmk.fm/#/getting_started_build_to
 Compile command:
 
     qmk compile -kb dumbpad/dual_top_encoders -km default
+
+Run in the MSYS2 MinGW 64-bit console.
